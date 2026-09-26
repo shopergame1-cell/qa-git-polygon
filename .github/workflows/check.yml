@@ -18,9 +18,9 @@ jobs:
           SCENARIO=$(cat .polygon-scenario 2>/dev/null || echo "")
           echo "scenario=$SCENARIO" >> "$GITHUB_OUTPUT"
           if [ -z "$SCENARIO" ]; then
-            echo "::notice title=Полігон::У репозиторії немає .polygon-scenario — запусти setup.sh потрібного сценарію."
+            echo "::notice title=Polygon::У репозиторії немає .polygon-scenario. Запусти setup.sh потрібного сценарію, розв'яжи його і запуш."
           else
-            echo "Сценарій: $SCENARIO"
+            echo "Сценарій для перевірки: $SCENARIO"
           fi
       - name: Налаштувати git
         run: |
@@ -28,7 +28,9 @@ jobs:
           git config user.name "Polygon"
       - name: Перевірка сценарію
         if: steps.scenario.outputs.scenario != ''
-        run: bash "scenarios/${{ steps.scenario.outputs.scenario }}/check.sh"
+        run: |
+          bash "scenarios/${{ steps.scenario.outputs.scenario }}/check.sh"
       - name: Звіт про успіх
         if: success() && steps.scenario.outputs.scenario != ''
-        run: echo "::notice title=Полігон::Сценарій ${{ steps.scenario.outputs.scenario }} перевірено: успіх. Прикріпи посилання на цей прогін у курсі."
+        run: |
+          echo "::notice title=Polygon::Сценарій ${{ steps.scenario.outputs.scenario }} перевірено успішно. Прикріпи посилання на цей прогін як артефакт у курсі."
