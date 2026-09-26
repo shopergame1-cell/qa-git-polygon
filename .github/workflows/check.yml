@@ -1,0 +1,34 @@
+name: Polygon check
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Визначити сценарій
+        id: scenario
+        run: |
+          SCENARIO=$(cat .polygon-scenario 2>/dev/null || echo "")
+          echo "scenario=$SCENARIO" >> "$GITHUB_OUTPUT"
+          if [ -z "$SCENARIO" ]; then
+            echo "::notice title=Полігон::У репозиторії немає .polygon-scenario — запусти setup.sh потрібного сценарію."
+          else
+            echo "Сценарій: $SCENARIO"
+          fi
+      - name: Налаштувати git
+        run: |
+          git config user.email "polygon@example.com"
+          git config user.name "Polygon"
+      - name: Перевірка сценарію
+        if: steps.scenario.outputs.scenario != ''
+        run: bash "scenarios/${{ steps.scenario.outputs.scenario }}/check.sh"
+      - name: Звіт про успіх
+        if: success() && steps.scenario.outputs.scenario != ''
+        run: echo "::notice title=Полігон::Сценарій ${{ steps.scenario.outputs.scenario }} перевірено: успіх. Прикріпи посилання на цей прогін у курсі."
